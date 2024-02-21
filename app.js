@@ -1,13 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const stuffRoutes = require('./routes/stuff');
+const booksRoutes = require('./routes/books');
 const userRoutes = require('./routes/user');
 const path = require('path');
 
 const app = express();
 mongoose
   .connect(
-    'mongodb+srv://Nonojim:CbwqkBeeA6N99khy@cluster0.jj9c3iv.mongodb.net/?retryWrites=true&w=majority'
+    'mongodb+srv://Platon:dlw8yedk9nOGY8aU@cluster0.x4skb6n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
   )
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/stuff', stuffRoutes);
+app.use('/api/books', booksRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 

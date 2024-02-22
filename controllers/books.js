@@ -124,67 +124,17 @@ exports.rateBook = (req, res, next) => {
     .catch(error => {res.status(400).json({error})});
 };
 
-/*// Middleware pour définir la note d'un livre
-exports.rateBook = (req, res, next) => {
-  const userRating = req.body;
-  console.log('Received userRating:', userRating);
-  console.log('Received rating:', userRating.rating);
-  const bookId = req.params.id;
 
-  // Vérifiez que la note est entre 0 et 5
-  if (userRating.rating < 0 || userRating.rating > 5) {
-    return res.status(400).json({error: 'La note doit être comprise entre 0 et 5.'});
-  }
-
-  // Recherchez le livre par son ID
-  Book.findById(bookId)
-    .then(book => {
-      if (!book) {
-        res.status(404).json({error: 'Livre non trouvé.'});
-      }
-
-      // Vérifiez si l'utilisateur a déjà noté ce livre
-      const userRatingIndex = book.ratings.findIndex(item => item.userId === req.auth.userId);
-      console.log('userRatingIndex', userRatingIndex);
-      if (userRatingIndex !== -1) {
-        res.status(400).json({error: 'Vous avez déjà noté ce livre.'});
-      }
-
-      // Ajoutez la note au tableau "ratings"
-      book.ratings.push({userId: req.auth.userId, rating});
-
-      // Mettez à jour la note moyenne "averageRating"
-      if (book.ratings.length > 0) {
-        const totalRating = book.ratings.reduce((acc, curr) => acc + curr.rating, 0);
-        console.log('Current rating:', curr.rating);
-        book.averageRating = totalRating / book.ratings.length;
-      } else {
-        // Si le tableau de notes est vide, mettez la moyenne à 0
-        book.averageRating = 0;
-      }
-
-      // Sauvegardez les modifications
-      book.save();
-    })
-    .then(updatedBook => {
-      // Renvoyez le livre mis à jour
-      res.status(200).json({message: 'Note définie avec succès.', book: updatedBook});
+exports.getBestBooks = (req, res, next) => {
+  Book.find()
+    .sort({ averageRating: -1 })
+    .limit(3)
+    .then(books => {
+      res.status(200).json(books);
     })
     .catch(error => {
-      res.status(500).json({error: 'Erreur lors de la définition de la note.'});
+      console.error('Erreur lors de la récupération des livres les mieux notés :', error); 
+      res.status(500).json({ error, message: 'Erreur lors de la récupération des livres les mieux notés.' });
     });
 };
 
-// Middleware pour récupérer les 3 livres avec la meilleure note moyenne
-exports.getBestBooks = (req, res, next) => {
-  // Récupérez les 3 livres avec la meilleure note moyenne
-  Book.find()
-    .sort({averageRating: -1})
-    .limit(3)
-    .then(bestRatedBooks => {
-      res.status(200).json({bestRatedBooks});
-    })
-    .catch(error => {
-      res.status(500).json({error: 'Erreur lors de la récupération des livres les mieux notés.'});
-    });
-};*/

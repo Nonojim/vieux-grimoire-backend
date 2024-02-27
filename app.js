@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const booksRoutes = require('./routes/books');
 const userRoutes = require('./routes/user');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 mongoose

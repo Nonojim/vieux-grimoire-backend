@@ -78,7 +78,6 @@ exports.getAllBooks = (req, res, next) => {
 exports.rateBook = (req, res, next) => {
   userRating = req.body;
   console.log('Received userRating:', userRating);
-  // Vérifiez que la note est entre 0 et 5
   if (userRating.rating < 0 || userRating.rating > 5) {
     return res.status(400).json({error: 'La note doit être comprise entre 0 et 5.'});
   }
@@ -104,7 +103,6 @@ exports.rateBook = (req, res, next) => {
 
       book.ratings.push({userId: userRating.userId, grade: userRating.rating});
 
-      // Mettez à jour la note moyenne "averageRating"
       console.log('book.ratings after push:', book.ratings);
       console.log('book.ratings.length after push:', book.ratings);
       console.log('averageRating before update:', book.averageRating);
@@ -117,7 +115,6 @@ exports.rateBook = (req, res, next) => {
 
       console.log('averageRating after update:', book.averageRating);
 
-      // Sauvegardez les modifications
       return book.save();
     })
     .then(updatedBook => { res.status(200).json(updatedBook)})

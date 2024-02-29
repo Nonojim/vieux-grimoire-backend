@@ -1,4 +1,5 @@
 const sharp = require('sharp');
+const path = require('path');
 
 const MIME_TYPES = {
   'image/jpg': 'jpg',
@@ -7,10 +8,24 @@ const MIME_TYPES = {
   'image/webp': 'webp',
 };
 
-const resizeImage = (req, res, next) => {
-  console.log('Sharp Config - Input Path:', req.file.path);  // Ajouter ce log
+const reziseImage =   (req, res, next) => {
+   console.log('req.file : ',req.file);
+   console.log('req.file.path : ',req.file.path);
+   sharp(req.file.path)
+    .resize({ width: 206, height: 260 })
+    .jpeg({ quality: 60 })
+    .webp({ quality: 60 })
+    .toFile(path.join('images', req.file.filename))
+    next()
+} 
 
-  sharp(req.file.path)
+module.exports = reziseImage;
+
+
+
+
+/*module.exports = reziseImage;
+sharp(req.file.path)
     .resize({ width: 206, height: 260 })
     .jpeg({ quality: 60 })
     .webp({ quality: 60 })
@@ -24,18 +39,4 @@ const resizeImage = (req, res, next) => {
       console.log(info);
 
       next();
-    });
-};
-
-module.exports = resizeImage;
-
-/*module.exports = reziseImage;
-
-const reziseImage = (req, res, next) => {
-  console.log(req.file.path);
-  sharp(req.file.path)
-    .resize({ width: 206, height: 260 })
-    .jpeg({ quality: 60 })
-    .webp({ quality: 60 })
-    
-}*/
+    });*/

@@ -12,7 +12,10 @@ const reziseImage =   (req, res, next) => {
    console.log('req.file : ',req.file);
    console.log('req.file.path : ',req.file.path);
    sharp(req.file.path)
-    .resize({ width: 206, height: 260 })
+   .resize(206, 260, {
+    fit: 'inside',
+    withoutEnlargement: true,
+  })
     .jpeg({ quality: 60 })
     .webp({ quality: 60 })
     .toFile(path.join('images', req.file.filename))

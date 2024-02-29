@@ -9,13 +9,14 @@ const MIME_TYPES = {
 };
 
 const reziseImage =   (req, res, next) => {
+  console.log(req.body);
    sharp(req.file.path)
    .resize(206, 260, {
     fit: 'inside',
     withoutEnlargement: true,
   })
-    .jpeg({ quality: 60 })
-    .webp({ quality: 60 })
+    .jpeg({ quality: 80 })
+    .webp({ quality: 80 })
     .toFile(path.join('images', req.file.filename))
     next()
 } 

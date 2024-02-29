@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('../middleware/auth');
+//const validateBook = require('../middleware/validateForm')
 const multer = require('../middleware/multer-config');
 const sharp = require('../middleware/sharp-config');
 const router = express.Router();

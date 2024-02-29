@@ -9,8 +9,6 @@ const MIME_TYPES = {
 };
 
 const reziseImage =   (req, res, next) => {
-   console.log('req.file : ',req.file);
-   console.log('req.file.path : ',req.file.path);
    sharp(req.file.path)
    .resize(206, 260, {
     fit: 'inside',
@@ -23,23 +21,3 @@ const reziseImage =   (req, res, next) => {
 } 
 
 module.exports = reziseImage;
-
-
-
-
-/*module.exports = reziseImage;
-sharp(req.file.path)
-    .resize({ width: 206, height: 260 })
-    .jpeg({ quality: 60 })
-    .webp({ quality: 60 })
-    .toFormat(MIME_TYPES[req.file.mimetype])
-    .toFile('images/' + req.file.filename, (err, info) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Erreur lors du redimensionnement de l\'image');
-      }
-
-      console.log(info);
-
-      next();
-    });*/

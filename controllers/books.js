@@ -2,7 +2,6 @@ const Book = require('../models/Book');
 const fs = require('fs');
 
 exports.createBook = (req, res, next) => {
-  console.log(req.body.book);
   const bookObject = JSON.parse(req.body.book);
   delete bookObject._id;
   delete bookObject._userId;
@@ -78,43 +77,29 @@ exports.getAllBooks = (req, res, next) => {
 
 exports.rateBook = (req, res, next) => {
   userRating = req.body;
-  console.log('Received userRating:', userRating);
   if (userRating.rating < 0 || userRating.rating > 5) {
     return res.status(400).json({error: 'La note doit être comprise entre 0 et 5.'});
   }
 
   bookId = req.params.id;
-  console.log('bookId:', bookId);
 
   Book.findById(bookId)
     .then(book => {
-      console.log('book.ratings:', book.ratings);
-      console.log('book.userId', book.userId);
-      console.log('book.ratings.grade', book.ratings[0].grade);
 
       const userRatingIndex = book.ratings.findIndex(item => item.userId === req.auth.userId);
-      console.log('userRatingIndex', userRatingIndex);
 
       if (userRatingIndex !== -1) {
         return res.status(400).json({error: 'Vous avez déjà noté ce livre.'});
       }
 
-      console.log('Received rating:', userRating.rating);
-      console.log('Received userId:', userRating.userId);
 
       book.ratings.push({userId: userRating.userId, grade: userRating.rating});
 
-      console.log('book.ratings after push:', book.ratings);
-      console.log('book.ratings.length after push:', book.ratings);
-      console.log('averageRating before update:', book.averageRating);
 
       if (book.ratings.length > 0) {
         const totalRating = book.ratings.reduce((acc, curr) => acc + curr.grade, 0);
-        console.log('total rating:', totalRating);
         book.averageRating = totalRating / book.ratings.length;
       }
-
-      console.log('averageRating after update:', book.averageRating);
 
       return book.save();
     })

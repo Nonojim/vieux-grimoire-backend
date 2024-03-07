@@ -10,7 +10,6 @@ const MIME_TYPES = {
 };
 
 exports.createBook = (req, res, next) => {
-  console.log('req.filectrl', req.file, 'req.bodyctrl', req.body);
   const bookObject = JSON.parse(req.body.book);
   if (
     !(
@@ -31,7 +30,6 @@ exports.createBook = (req, res, next) => {
   delete bookObject._id;
   delete bookObject._userId;
   const filename = uuid.v4() + '.' + MIME_TYPES[req.file.mimetype];
-  console.log('filename', filename);
   const book = new Book({
     userId: req.auth.userId,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${filename}`, // TODO:

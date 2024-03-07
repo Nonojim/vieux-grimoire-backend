@@ -1,21 +1,57 @@
 const Book = require('../models/Book');
 const fs = require('fs');
+const uuid = require('uuid');
+
+const MIME_TYPES = {
+  'image/jpg': 'jpg',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
 
 exports.createBook = (req, res, next) => {
+  console.log('req.filectrl', req.file, 'req.bodyctrl', req.body);
   const bookObject = JSON.parse(req.body.book);
+  if (
+    !(
+      bookObject.title &&
+      Array.isArray(bookObject.ratings) &&
+      bookObject.ratings.length === 1 &&
+      bookObject.ratings[0].userId &&
+      bookObject.ratings[0].grade &&
+      bookObject.author &&
+      bookObject.year &&
+      !isNaN(bookObject.year) &&
+      bookObject.averageRating &&
+      bookObject.genre
+    )
+  ) {
+    return res.status(400).json({error: 'BAD_REQUEST'});
+  }
   delete bookObject._id;
   delete bookObject._userId;
+  const filename = uuid.v4() + '.' + MIME_TYPES[req.file.mimetype];
+  console.log('filename', filename);
   const book = new Book({
     userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${filename}`, // TODO:
     averageRating: 0,
     ratings: [],
     ...bookObject,
   });
   book
     .save()
-    .then(() => res.status(201).json({message: 'Objet enregistré !'}))
-    .catch(error => res.status(400).json({error}));
+    .then(() => {
+      fs.writeFile(`images/${filename}`, req.file.buffer, err => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log('Le fichier a été écrit avec succès dans le dossier images.');
+        }
+      });
+      return res.status(201).json({message: 'Objet enregistré !'});
+    })
+    .catch(error => res.status(500).json({error}));
 };
 
 exports.modifyBook = (req, res, next) => {
@@ -85,16 +121,13 @@ exports.rateBook = (req, res, next) => {
 
   Book.findById(bookId)
     .then(book => {
-
       const userRatingIndex = book.ratings.findIndex(item => item.userId === req.auth.userId);
 
       if (userRatingIndex !== -1) {
         return res.status(400).json({error: 'Vous avez déjà noté ce livre.'});
       }
 
-
       book.ratings.push({userId: userRating.userId, grade: userRating.rating});
-
 
       if (book.ratings.length > 0) {
         const totalRating = book.ratings.reduce((acc, curr) => acc + curr.grade, 0);
@@ -103,21 +136,25 @@ exports.rateBook = (req, res, next) => {
 
       return book.save();
     })
-    .then(updatedBook => { res.status(200).json(updatedBook)})
-    .catch(error => {res.status(400).json({error})});
+    .then(updatedBook => {
+      res.status(200).json(updatedBook);
+    })
+    .catch(error => {
+      res.status(400).json({error});
+    });
 };
-
 
 exports.getBestBooks = (req, res, next) => {
   Book.find()
-    .sort({ averageRating: -1 })
+    .sort({averageRating: -1})
     .limit(3)
     .then(books => {
       res.status(200).json(books);
     })
     .catch(error => {
-      console.error('Erreur lors de la récupération des livres les mieux notés :', error); 
-      res.status(500).json({ error, message: 'Erreur lors de la récupération des livres les mieux notés.' });
+      console.error('Erreur lors de la récupération des livres les mieux notés :', error);
+      res
+        .status(500)
+        .json({error, message: 'Erreur lors de la récupération des livres les mieux notés.'});
     });
 };
-

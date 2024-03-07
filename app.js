@@ -9,11 +9,9 @@ const app = express();
 app.use(express.json());
 
 mongoose
-.connect(
-  'mongodb+srv://Platon:dlw8yedk9nOGY8aU@cluster0.x4skb6n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
-)
-.then(() => console.log('Connexion à MongoDB réussie !'))
-.catch(() => console.log('Connexion à MongoDB échouée !'));
+  .connect(`${process.env.MONGO_DB_CNX}`)
+  .then(() => console.log('Connexion à MongoDB réussie !'))
+  .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

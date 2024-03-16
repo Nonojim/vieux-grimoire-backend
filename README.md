@@ -1,3 +1,1 @@
-.env {
-TOKEN_SECRET= string
-}
+.env { TOKEN_SECRET= string, MONGO_DB_CNX= string }

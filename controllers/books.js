@@ -32,7 +32,7 @@ exports.createBook = (req, res, next) => {
   const filename = uuid.v4() + '.' + MIME_TYPES[req.file.mimetype];
   const book = new Book({
     userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${filename}`, // TODO:
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${filename}`,
     averageRating: 0,
     ratings: [],
     ...bookObject,
@@ -53,26 +53,62 @@ exports.createBook = (req, res, next) => {
 };
 
 exports.modifyBook = (req, res, next) => {
-  const bookObject = req.file
-    ? {
-        ...JSON.parse(req.body.book),
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-      }
-    : {...req.body};
+  const bookId = req.params.id;
+  const userId = req.auth.userId;
+  const newFilename = req.file ? uuid.v4() + '.' + MIME_TYPES[req.file.mimetype] : null;
 
-  delete bookObject._userId;
-  Book.findOne({_id: req.params.id})
+  let bookData = JSON.parse(req.body.book);
+  delete bookData._userId;
+
+  Book.findById(bookId)
     .then(book => {
-      if (book.userId != req.auth.userId) {
-        res.status(403).json({message: 'unauthorized request'});
-      } else {
-        Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
-          .then(() => res.status(200).json({message: 'Objet modifié!'}))
-          .catch(error => res.status(401).json({error}));
+      if (!book) {
+        return res.status(404).json({message: 'Livre non trouvé'});
       }
+
+      if (book.userId.toString() !== userId) {
+        return res.status(403).json({message: 'Demande non autorisée'});
+      }
+
+      let imageUrl = book.imageUrl;
+
+      if (req.file) {
+        imageUrl = `${req.protocol}://${req.get('host')}/images/${newFilename}`;
+
+        if (book.imageUrl && book.imageUrl !== imageUrl) {
+          const oldFilename = book.imageUrl.split('/').pop();
+          fs.unlink(`images/${oldFilename}`, err => {
+            if (err) {
+              console.error("Erreur lors de la suppression de l'ancienne image :", err);
+            }
+          });
+        }
+      }
+
+      const updatedBookData = {
+        ...bookData,
+        _id: bookId,
+        userId: userId,
+        imageUrl: imageUrl,
+      };
+
+      return Book.updateOne({_id: bookId}, updatedBookData);
+    })
+    .then(() => {
+      if (newFilename) {
+        fs.writeFile(`images/${newFilename}`, req.file.buffer, err => {
+          if (err) {
+            console.error("Erreur lors de l'écriture du fichier :", err);
+          } else {
+            console.log('Le fichier a été écrit avec succès dans le dossier images.');
+          }
+        });
+      }
+      res.status(200).json({message: 'Livre modifié avec succès'});
     })
     .catch(error => {
-      res.status(400).json({error});
+      console.error('Erreur lors de la modification du livre :', error);
+      res.status(500).json({error: 'Erreur lors de la modification du livre'});
     });
 };
 

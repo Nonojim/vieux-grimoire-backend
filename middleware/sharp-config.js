@@ -10,10 +10,11 @@ const MIME_TYPES = {
 
 const reziseImage = (req, res, next) => {
   if (!req.file) {
-    return res.status(400).json({error: 'NO_IMAGE'});
+    return next();
+    //return res.status(400).json({error: 'NO_IMAGE'});
   }
 
-  const {buffer, originalname} = req.file;
+  const {buffer} = req.file;
 
   sharp(buffer)
     .resize(206, 260, {

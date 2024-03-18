@@ -57,7 +57,7 @@ exports.modifyBook = (req, res, next) => {
   const userId = req.auth.userId;
   const newFilename = req.file ? uuid.v4() + '.' + MIME_TYPES[req.file.mimetype] : null;
 
-  let bookData = JSON.parse(req.body.book);
+  let bookData = req.body;
   delete bookData._userId;
 
   Book.findById(bookId)
